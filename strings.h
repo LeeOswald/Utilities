@@ -20,7 +20,7 @@ inline std::wstring s2ws(unsigned int cp, const char* s, size_t length = size_t(
 		return std::wstring();
 
 	std::wstring buffer(required, 'L\0');
-	auto result = ::MultiByteToWideChar(cp, 0, s, static_cast<int>(length), buffer.data(), static_cast<int>(buffer.capacity()));
+	auto result = ::MultiByteToWideChar(cp, 0, s, static_cast<int>(length), const_cast<wchar_t*>(buffer.data()), static_cast<int>(buffer.capacity()));
 	if (!result)
 		return std::wstring();
 
@@ -50,7 +50,7 @@ inline std::string ws2s(unsigned int cp, const wchar_t* s, size_t length = size_
 		return std::string();
 
 	std::string buffer(required, '\0');
-	auto result = ::WideCharToMultiByte(cp, 0, s, static_cast<int>(length), buffer.data(), static_cast<int>(buffer.capacity()), nullptr, nullptr);
+	auto result = ::WideCharToMultiByte(cp, 0, s, static_cast<int>(length), const_cast<char*>(buffer.data()), static_cast<int>(buffer.capacity()), nullptr, nullptr);
 	if (!result)
 		return std::string();
 

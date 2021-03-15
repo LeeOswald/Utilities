@@ -18,13 +18,13 @@
 #define __MOROSE_USE_FILE      1       // output to UTF-8 encoded file
 
 #undef __MOROSE_USE_DEBUGGER
-#define __MOROSE_USE_DEBUGGER  1      // output to the debugger window
+#define __MOROSE_USE_DEBUGGER  0      // output to the debugger window
 
 #undef __MOROSE_LOG_PREFIX
 #define __MOROSE_LOG_PREFIX L"Morose"  // prefix for log file names
 
-#undef __MOROSE_USE_RECORD_PREFIXES
-#define __MOROSE_USE_RECORD_PREFIXES
+#undef __MOROSE_USE_RECORD_PREFIXES  // output timestamps
+#define __MOROSE_USE_RECORD_PREFIXES 0
 
 #undef __MOROSE_MAX_SAFE_BUFFER
 #define  __MOROSE_MAX_SAFE_BUFFER 4096
@@ -81,6 +81,30 @@ public:
 
 		buffer(const buffer&) = delete;
 		buffer& operator =(const buffer&) = delete;
+
+		void swap(buffer& o) noexcept
+		{
+			using std::swap;
+			swap(buffer_, o.buffer_);
+			swap(size_, o.size_);
+			swap(lock_, o.lock_);
+		}
+
+		buffer(buffer&& o) noexcept
+			: buffer()
+		{
+			o.swap(this);
+		}
+
+		buffer&  operator=(buffer&& o) noexcept
+		{
+			if (this != &o)
+			{
+				buffer(std::move(o)).swap(this);
+			}
+
+			return *this;
+		}
 
 		std::pair<T*, size_t> get() noexcept
 		{
@@ -244,7 +268,7 @@ public:
 #if __MOROSE_USE_FILE 
 			{
 				// convert to UTF-8
-				auto sb = safe_buffer<char>::instance().get();
+				auto& sb = safe_buffer<char>::instance().get();
 				auto b = sb.get();
 				auto result = ::WideCharToMultiByte(CP_UTF8, 0, s, static_cast<int>(length), b.first, static_cast<int>(b.second), nullptr, nullptr);
 				if (!result)
@@ -386,7 +410,7 @@ inline void traceV_s(const wchar_t* format, va_list args) noexcept
 	auto w = tc.get();
 
 	// prefix
-#ifdef	__MOROSE_USE_RECORD_PREFIXES
+#if	__MOROSE_USE_RECORD_PREFIXES
 	{
 		SYSTEMTIME st = { 0 };
 		::GetLocalTime(&st);
@@ -421,7 +445,7 @@ inline void traceV_s(const wchar_t* format, va_list args) noexcept
 	int length = 0;
 	{
 		auto& sb = detail::safe_buffer<wchar_t>::instance();
-		auto buffer = sb.get();
+		auto& buffer = sb.get();
 		auto b = buffer.get();
 		length = ::_vsnwprintf_s(b.first, b.second, _TRUNCATE, format, args);
 
@@ -438,7 +462,7 @@ inline void traceV_s(const char* format, va_list args) noexcept
 	auto w = tc.get();
 
 	// prefix
-#ifdef	__MOROSE_USE_RECORD_PREFIXES
+#if	__MOROSE_USE_RECORD_PREFIXES
 	{
 		SYSTEMTIME st = { 0 };
 		::GetLocalTime(&st);
@@ -470,7 +494,7 @@ inline void traceV_s(const char* format, va_list args) noexcept
 	// actual text
 	{
 		auto& sb = detail::safe_buffer<char>::instance();
-		auto buffer = sb.get();
+		auto& buffer = sb.get();
 		auto b = buffer.get();
 		auto result = ::vsnprintf_s(b.first, b.second, _TRUNCATE, format, args);
 
@@ -519,6 +543,7 @@ inline void traceV(const wchar_t* format, va_list args) noexcept
 		s = i + s;
 	}
 
+#if __MOROSE_USE_RECORD_PREFIXES
 	{
 		SYSTEMTIME st = { 0 };
 		::GetLocalTime(&st);
@@ -537,7 +562,7 @@ inline void traceV(const wchar_t* format, va_list args) noexcept
 			);
 		s = std::wstring(Prefix).append(s);
 	}
-
+#endif
 	auto& tc = detail::trace_context::instance();
 	auto w = tc.get();
 	w.write(s);
@@ -556,7 +581,8 @@ inline void traceV(const char* format, va_list args) noexcept
 
 		s = i + s;
 	}
-
+	
+#if __MOROSE_USE_RECORD_PREFIXES
 	{
 		SYSTEMTIME st = { 0 };
 		::GetLocalTime(&st);
@@ -575,6 +601,7 @@ inline void traceV(const char* format, va_list args) noexcept
 			);
 		s = std::string(Prefix).append(s);
 	}
+#endif
 
 	auto& tc = detail::trace_context::instance();
 	auto w = tc.get();
