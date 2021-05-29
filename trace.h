@@ -5,9 +5,11 @@
 
 #include <atomic>
 #include <cstdarg>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
+
 
 #include <windows.h>
 
@@ -15,16 +17,19 @@
 
 
 #undef __MOROSE_USE_FILE
-#define __MOROSE_USE_FILE      1       // output to UTF-8 encoded file
+#define __MOROSE_USE_FILE      0       // output to UTF-8 encoded file
 
 #undef __MOROSE_USE_DEBUGGER
-#define __MOROSE_USE_DEBUGGER  0      // output to the debugger window
+#define __MOROSE_USE_DEBUGGER  1      // output to the debugger window
+
+#undef __MOROSE_USE_CONSOLE
+#define __MOROSE_USE_CONSOLE   1
 
 #undef __MOROSE_LOG_PREFIX
 #define __MOROSE_LOG_PREFIX L"Morose"  // prefix for log file names
 
-#undef __MOROSE_USE_RECORD_PREFIXES  // output timestamps
-#define __MOROSE_USE_RECORD_PREFIXES 0
+#undef __MOROSE_USE_RECORD_PREFIXES    // output timestamps
+#define __MOROSE_USE_RECORD_PREFIXES 1
 
 #undef __MOROSE_MAX_SAFE_BUFFER
 #define  __MOROSE_MAX_SAFE_BUFFER 4096
@@ -108,7 +113,7 @@ public:
 
 		std::pair<T*, size_t> get() noexcept
 		{
-			return std::make_pair(buffer_, size_ / sizeof(T));
+			return std::make_pair(buffer_, size_t(size_ / sizeof(T)));
 		}
 
 	private:
@@ -205,54 +210,28 @@ public:
 			return *this;
 		}
 
-		void write(const char* s, size_t length)
+		void write(const wchar_t* ws, size_t length)
 		{
 			if (length < 0)
-				length = std::strlen(s);
+				length = std::wcslen(ws);
 
 #if __MOROSE_USE_FILE 
+			auto s = strings::ws2utf8(std::wstring(ws, length));
 			DWORD wr = 0;
-			::WriteFile(_file(), s, static_cast<DWORD>(length), &wr, 0);
+			::WriteFile(_file(), s.c_str(), static_cast<DWORD>(s.length()), &wr, 0);
 #endif
 
 #if __MOROSE_USE_DEBUGGER
 			if (::IsDebuggerPresent())
-				::OutputDebugStringA(s);
-#endif
-		}
-
-		void write(const std::string& s)
-		{
-			write(s.data(), s.length());
-		}
-
-		void write(const wchar_t* s, size_t length)
-		{
-			if (length < 0)
-				length = std::wcslen(s);
-
-#if __MOROSE_USE_FILE 
-			DWORD wr = 0;
-			::WriteFile(_file(), s, static_cast<DWORD>(length), &wr, 0);
+				::OutputDebugStringW(ws);
 #endif
 
-#if __MOROSE_USE_DEBUGGER
-			if (::IsDebuggerPresent())
-				::OutputDebugStringW(s);
+#if __MOROSE_USE_CONSOLE
+			std::wcout << ws;
 #endif
 		}
 
 		void write(const std::wstring& s)
-		{
-			write(s.data(), s.length());
-		}
-
-		void write_s(const char* s, size_t length)
-		{
-			write(s, length);
-		}
-
-		void write_s(const std::string& s)
 		{
 			write(s.data(), s.length());
 		}
@@ -268,7 +247,7 @@ public:
 #if __MOROSE_USE_FILE 
 			{
 				// convert to UTF-8
-				auto& sb = safe_buffer<char>::instance().get();
+				auto sb = safe_buffer<char>::instance().get();;
 				auto b = sb.get();
 				auto result = ::WideCharToMultiByte(CP_UTF8, 0, s, static_cast<int>(length), b.first, static_cast<int>(b.second), nullptr, nullptr);
 				if (!result)
@@ -282,6 +261,10 @@ public:
 #if __MOROSE_USE_DEBUGGER
 			if (::IsDebuggerPresent())
 				::OutputDebugStringW(s);
+#endif
+
+#if __MOROSE_USE_CONSOLE
+			std::wcout << s;
 #endif
 		}
 
@@ -444,9 +427,8 @@ inline void traceV_s(const wchar_t* format, va_list args) noexcept
 	const wchar_t* text = nullptr;
 	int length = 0;
 	{
-		auto& sb = detail::safe_buffer<wchar_t>::instance();
-		auto& buffer = sb.get();
-		auto b = buffer.get();
+		auto sb = detail::safe_buffer<wchar_t>::instance().get();
+		auto b = sb.get();
 		length = ::_vsnwprintf_s(b.first, b.second, _TRUNCATE, format, args);
 
 		if (length > 0)
@@ -456,66 +438,7 @@ inline void traceV_s(const wchar_t* format, va_list args) noexcept
 	w.write_s(L"\n", 1);
 }
 
-inline void traceV_s(const char* format, va_list args) noexcept
-{
-	auto& tc = detail::trace_context::instance();
-	auto w = tc.get();
-
-	// prefix
-#if	__MOROSE_USE_RECORD_PREFIXES
-	{
-		SYSTEMTIME st = { 0 };
-		::GetLocalTime(&st);
-		char Prefix[64];
-		::_snprintf_s(
-			Prefix,
-			_countof(Prefix),
-			_TRUNCATE,
-			"[%02d:%02d:%02d.%03d %d:%d] ",
-			st.wHour,
-			st.wMinute,
-			st.wSecond,
-			st.wMilliseconds,
-			::GetCurrentProcessId(),
-			::GetCurrentThreadId()
-			);
-
-		w.write_s(Prefix);
-	}
-#endif
-
-	// indent
-	wchar_t indent[__MOROSE_MAX_INDENT];
-	for (int i = 0; i < current_indent(); ++i)
-		indent[i] = L' ';
-	indent[current_indent()] = L'\0';
-	w.write_s(indent, current_indent());
-
-	// actual text
-	{
-		auto& sb = detail::safe_buffer<char>::instance();
-		auto& buffer = sb.get();
-		auto b = buffer.get();
-		auto result = ::vsnprintf_s(b.first, b.second, _TRUNCATE, format, args);
-
-		if (result > 0)
-			w.write_s(b.first, result);
-	}
-
-	w.write_s("\n", 1);
-}
-
 inline void trace_s(const wchar_t* format, ...) noexcept
-{
-	va_list args;
-	va_start(args, format);
-
-	traceV_s(format, args);
-
-	va_end(args);
-}
-
-inline void trace_s(const char* format, ...) noexcept
 {
 	va_list args;
 	va_start(args, format);
@@ -568,57 +491,7 @@ inline void traceV(const wchar_t* format, va_list args) noexcept
 	w.write(s);
 }
 
-inline void traceV(const char* format, va_list args) noexcept
-{
-	auto s = strings::formatV(format, args);
-	s.append("\n");
-
-	auto ind = current_indent();
-	if (ind > 0)
-	{
-		std::string i;
-		i.append(ind, ' ');
-
-		s = i + s;
-	}
-	
-#if __MOROSE_USE_RECORD_PREFIXES
-	{
-		SYSTEMTIME st = { 0 };
-		::GetLocalTime(&st);
-		char Prefix[64];
-		::_snprintf_s(
-			Prefix,
-			_countof(Prefix),
-			_TRUNCATE,
-			"[%02d:%02d:%02d.%03d %d:%d] ",
-			st.wHour,
-			st.wMinute,
-			st.wSecond,
-			st.wMilliseconds,
-			::GetCurrentProcessId(),
-			::GetCurrentThreadId()
-			);
-		s = std::string(Prefix).append(s);
-	}
-#endif
-
-	auto& tc = detail::trace_context::instance();
-	auto w = tc.get();
-	w.write(s);
-}
-
 inline void trace(const wchar_t* format, ...) noexcept
-{
-	va_list args;
-	va_start(args, format);
-
-	traceV(format, args);
-
-	va_end(args);
-}
-
-inline void trace(const char* format, ...) noexcept
 {
 	va_list args;
 	va_start(args, format);
@@ -666,15 +539,6 @@ public:
 		va_end(args);
 
 		change_indent(delta);
-	}
-
-	explicit indent_scope_s(int delta, const char* format, ...) noexcept
-		: delta_(delta)
-	{
-		va_list args;
-		va_start(args, format);
-		traceV_s(format, args);
-		va_end(args);
 	}
 
 private:
