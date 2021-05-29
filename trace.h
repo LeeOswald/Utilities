@@ -302,6 +302,24 @@ public:
 		return w;
 	}
 
+	int current_indent() noexcept
+	{
+		return *_indent();
+	}
+
+	int change_indent(int delta) noexcept
+	{
+		auto current = _indent();
+
+		*current += delta;
+		if (*current > __MOROSE_MAX_INDENT)
+			*current = __MOROSE_MAX_INDENT;
+		if (*current < 0)
+			*current = 0;
+
+		return *current;
+	}
+
 private:
 	trace_context()
 	{
@@ -355,35 +373,17 @@ private:
 	}
 #endif
 
+	static int* _indent() noexcept
+	{
+		thread_local int i = 0;
+		return&i;
+	}
 };
 
 #pragma endregion // trace_constext
 
 } // namespace detail {}
 
-static inline int* _indent() noexcept
-{
-	thread_local int i = 0;
-	return& i;
-}
-
-inline int current_indent() noexcept
-{
-	return *_indent();
-}
-
-inline int change_indent(int delta) noexcept
-{
-	auto current = _indent();
-
-	*current += delta;
-	if (*current > __MOROSE_MAX_INDENT)
-		*current = __MOROSE_MAX_INDENT;
-	if (*current < 0)
-		*current = 0;
-
-	return *current;
-}
 
 #pragma region trace_s
 
@@ -417,10 +417,10 @@ inline void traceV_s(const wchar_t* format, va_list args) noexcept
 	// indent
 	{
 		wchar_t indent[__MOROSE_MAX_INDENT];
-		for (int i = 0; i < current_indent(); ++i)
+		for (int i = 0; i < tc.current_indent(); ++i)
 			indent[i] = L' ';
-		indent[current_indent()] = L'\0';
-		w.write_s(indent, current_indent());
+		indent[tc.current_indent()] = L'\0';
+		w.write_s(indent, tc.current_indent());
 	}
 
 	// actual text
@@ -454,10 +454,13 @@ inline void trace_s(const wchar_t* format, ...) noexcept
 
 inline void traceV(const wchar_t* format, va_list args) noexcept
 {
+	auto& tc = detail::trace_context::instance();
+	auto w = tc.get();
+
 	auto s = strings::formatV(format, args);
 	s.append(L"\n");
 
-	auto ind = current_indent();
+	auto ind = tc.current_indent();
 	if (ind > 0)
 	{
 		std::wstring i;
@@ -486,8 +489,7 @@ inline void traceV(const wchar_t* format, va_list args) noexcept
 		s = std::wstring(Prefix).append(s);
 	}
 #endif
-	auto& tc = detail::trace_context::instance();
-	auto w = tc.get();
+	
 	w.write(s);
 }
 
@@ -521,24 +523,28 @@ struct indent_scope_s
 public:
 	~indent_scope_s()
 	{
-		change_indent(-delta_);
+		auto& tc = detail::trace_context::instance();
+		tc.change_indent(-delta_);
 	}
 
 	explicit indent_scope_s(int delta = __MOROSE_INDENT_SIZE) noexcept
 		: delta_(delta)
 	{
-		change_indent(delta);
+		auto& tc = detail::trace_context::instance();
+		tc.change_indent(delta);
 	}
 
 	explicit indent_scope_s(int delta, const wchar_t* format, ...) noexcept
 		: delta_(delta)
 	{
+		auto& tc = detail::trace_context::instance();
+
 		va_list args;
 		va_start(args, format);
 		traceV_s(format, args);
 		va_end(args);
 
-		change_indent(delta);
+		tc.change_indent(delta);
 	}
 
 private:
