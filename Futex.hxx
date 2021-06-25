@@ -5,21 +5,21 @@
 namespace Util
 {
 
-class FastMutex final
+class Futex final
 {
 public:
-    ~FastMutex() noexcept
+    ~Futex() noexcept
     {
         ::DeleteCriticalSection(&m_cs);
     }
 
-    FastMutex() noexcept
+    Futex() noexcept
     {
         ::InitializeCriticalSectionAndSpinCount(&m_cs, 4000);
     }
 
-    FastMutex(const FastMutex&) = delete;
-    FastMutex& operator=(const FastMutex&) = delete;
+    Futex(const Futex&) = delete;
+    Futex& operator=(const Futex&) = delete;
 
     void lock() noexcept
     {
@@ -44,7 +44,7 @@ public:
         m_mtx.unlock();
     }
 
-    LockGuard(FastMutex& mtx)
+    LockGuard(Futex& mtx)
         : m_mtx(mtx)
     {
     }
@@ -53,7 +53,7 @@ public:
     LockGuard& operator=(const LockGuard&) = delete;
 
 private:
-    FastMutex& m_mtx;
+    Futex& m_mtx;
 };
 
 } // namespace Util {}
