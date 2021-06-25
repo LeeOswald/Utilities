@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Error.hxx" />
     <ClInclude Include="..\..\Exception.hxx" />
+    <ClInclude Include="..\..\FastMutex.hxx" />
     <ClInclude Include="..\..\ISimpleDelegate.hxx" />
     <ClInclude Include="..\..\murmurhash.hxx" />
     <ClInclude Include="..\..\Process.hxx" />

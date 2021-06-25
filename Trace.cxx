@@ -1,10 +1,11 @@
+#include "./FastMutex.hxx"
 #include "./IntrusiveList.hxx"
 #include "./Strings.hxx"
 #include "./Trace.hxx"
 
 #include <cstdio>
 #include <iostream>
-#include <mutex>
+
 
 namespace Util
 {
@@ -21,14 +22,14 @@ const int kMaxIndent = 64;
 bool g_Enabled = false;
 bool g_Console = false;
 __declspec(thread) int g_Indent = 0;
-std::mutex g_Lock;
+FastMutex g_Lock;
 
 void bailOutWrite(const wchar_t* text, va_list args)
 {
     static wchar_t buffer[1024];
     ::_vsnwprintf_s(buffer, _countof(buffer), _TRUNCATE, text, args);
 
-    std::lock_guard<std::mutex> l(g_Lock);
+    LockGuard l(g_Lock);
     ::OutputDebugStringW(buffer);
     ::OutputDebugStringW(L"\n");
 
@@ -95,7 +96,8 @@ void writeV(Level level, const char* module, const char* file, int line, const w
 
 int indent(int delta)
 {
-    std::lock_guard<std::mutex> l(g_Lock);
+    LockGuard l(g_Lock);
+
     auto i = g_Indent;
     g_Indent += delta;
     if (g_Indent < 0)
@@ -108,7 +110,7 @@ int indent(int delta)
 
 void setIndent(int indent)
 {
-    std::lock_guard<std::mutex> l(g_Lock);
+    LockGuard l(g_Lock);
 
     g_Indent = indent;
     if (g_Indent < 0)

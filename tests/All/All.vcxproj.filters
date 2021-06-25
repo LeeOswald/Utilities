@@ -74,6 +74,9 @@
     <ClInclude Include="..\..\murmurhash.hxx">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\FastMutex.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\ntstatus.inl">

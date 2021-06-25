@@ -1,6 +1,7 @@
 Util::Empty
 Util::Error
 Util::Exception
+Util::FastMutex
 Util::NtError
 Util::Win32Error
 Util::Win32Event

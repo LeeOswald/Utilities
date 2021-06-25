@@ -10,7 +10,7 @@
 namespace Util
 {
 
-class Exception
+class Exception final
     : public std::exception
 {
 public:
