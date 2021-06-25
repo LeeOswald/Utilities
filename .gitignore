@@ -1,0 +1,8 @@
+*.vcxproj.user
+.vs
+ipch
+tests/bin
+tests/tmp
+*.pyc
+*.code-workspace
+.vscode

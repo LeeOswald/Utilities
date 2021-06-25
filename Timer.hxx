@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef __MOROSE_TIMER_H_INCLUDED__
-#define __MOROSE_TIMER_H_INCLUDED__
 
 #include <memory>
 #include <string>
@@ -179,4 +177,3 @@ private:
 #define PERFTIMER_SCOPEW(Name)    (void)0
 #endif
 
-#endif // __MOROSE_TIMER_H_INCLUDED__

@@ -1,15 +1,12 @@
 #pragma once
 
-#ifndef __MOROSE_STRINGS_H_INCLUDED__
-#define __MOROSE_STRINGS_H_INCLUDED__
-
 #include <malloc.h>
 #include <memory>
 #include <string>
 
 #include <windows.h>
 
-namespace strings
+namespace Util
 {
 
 inline std::wstring s2ws(unsigned int cp, const char* s, size_t length = size_t(-1))
@@ -217,6 +214,4 @@ inline std::wstring formatMessage(long r, HINSTANCE module = 0)
 }
 
 
-} // namespace strings {}
-
-#endif // __MOROSE_STRINGS_H_INCLUDED__
+} // namespace Util {}
