@@ -108,7 +108,7 @@ Thread::Thread(ISimpleDelegate* task, void* ctx, const char* name)
 
     m_h = (HANDLE)::_beginthreadex(nullptr, 0, _threadProcStatic, this, 0, &m_id);
     if (!m_h)
-        Exception(Win32Error::make(::GetLastError(), std::wstring(), __FILE__, __LINE__));
+        Exception(Win32Error::make(::GetLastError(), L"", __FILE__, __LINE__));
 }
 
 void Thread::_APCProc(ULONG_PTR) noexcept

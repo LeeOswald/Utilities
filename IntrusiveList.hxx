@@ -6,73 +6,62 @@
 namespace Util
 {
 
-enum class Search
-{
-	stop = 0,
-	go = 1
-};
-
-#pragma region NodeBase
-
-struct NodeBase
-{
-	virtual ~NodeBase() = default;
-	NodeBase() = default;
-
-	explicit NodeBase(NodeBase* prev, NodeBase* next) noexcept
-		: prev(prev)
-		, next(next)
-	{}
-
-	NodeBase(const NodeBase&) = delete;
-	NodeBase& operator=(const NodeBase&) = delete;
-
-	void swap(NodeBase& o) noexcept
-	{
-		using std::swap;
-		swap(prev, o.prev);
-		swap(next, o.next);
-	}
-
-	NodeBase(NodeBase&& o) noexcept
-		: NodeBase()
-	{
-		o.swap(*this);
-	}
-
-	NodeBase& operator=(NodeBase&& o) noexcept
-	{
-		if (this != &o)
-		{
-			NodeBase(std::move(o)).swap(*this);
-		}
-
-		return *this;
-	}
-
-	void unlink() noexcept
-	{
-        if (next)
-            next->prev = prev;
-
-		if (prev)
-			prev->next = next;
-
-		prev = nullptr;
-		next = nullptr;
-	}
-
-	NodeBase* prev = nullptr;
-	NodeBase* next = nullptr;
-};
-
-#pragma endregion // NodeBase
-
-#pragma region IntrusiveList
-
 struct IntrusiveList
 {
 public:
+    struct Node
+    {
+        virtual ~Node() = default;
+        Node() = default;
+
+        explicit Node(Node* prev, Node* next) noexcept
+            : prev(prev)
+            , next(next)
+        {}
+
+        Node(const Node&) = delete;
+        Node& operator=(const Node&) = delete;
+
+        void swap(Node& o) noexcept
+        {
+            using std::swap;
+            swap(prev, o.prev);
+            swap(next, o.next);
+        }
+
+        Node(Node&& o) noexcept
+            : Node()
+        {
+            o.swap(*this);
+        }
+
+        Node& operator=(Node&& o) noexcept
+        {
+            if (this != &o)
+            {
+                Node(std::move(o)).swap(*this);
+            }
+
+            return *this;
+        }
+
+        void unlink() noexcept
+        {
+            if (next)
+                next->prev = prev;
+
+            if (prev)
+                prev->next = next;
+
+            prev = nullptr;
+            next = nullptr;
+        }
+
+        Node* prev = nullptr;
+        Node* next = nullptr;
+    };
+
+
 	~IntrusiveList() noexcept
 	{
 		clear();
@@ -105,72 +94,17 @@ public:
 		return *this;
 	}
 
-	NodeBase* first() const noexcept
-	{
-		return first_;
-	}
-
-	NodeBase* last() const noexcept
-	{
-		return last_;
-	}
-
-	NodeBase* next(NodeBase* item) const noexcept
-	{
-		if (item && item->next)
-			return item->next;
-
-		return nullptr;
-	}
-
-	NodeBase* prev(NodeBase* item) const noexcept
-	{
-		if (item && item->prev)
-			return item->prev;
-
-		return nullptr;
-	}
-
 	bool empty() const noexcept
 	{
 		return (count_ == 0);
 	}
 
-	size_t count() const noexcept
+	size_t size() const noexcept
 	{
 		return count_;
 	}
 		
-	template <typename THandler>
-	void for_each(THandler handler) const noexcept
-	{
-		auto p = first_;
-		while (p)
-		{
-			auto p0 = p->next();
-			if (handler(p) == Search::stop)
-				break;
-
-			p = p0;
-		}
-	}
-
-	template <typename THandler>
-	NodeBase* find(THandler handler) const noexcept
-	{
-		auto p = first_;
-		while (p)
-		{
-			if (handler(static_cast<typename THandler::T*>(p)) == Search::stop)
-				return p;
-
-			p = p->next();
-		}
-
-		return nullptr;
-	}
-
-	NodeBase* push_back(NodeBase* item) noexcept
+	Node* push_back(Node* item) noexcept
 	{
 		assert(item);
 
@@ -193,7 +127,7 @@ public:
 		return last_;
 	}
 
-	NodeBase* push_front(NodeBase* item) noexcept
+	Node* push_front(Node* item) noexcept
 	{
 		assert(item);
 
@@ -216,7 +150,7 @@ public:
 		return first_;
 	}
 
-	void remove(NodeBase* item) noexcept
+	void erase(Node* item) noexcept
 	{
 		assert(item);
 
@@ -269,17 +203,10 @@ public:
 
 	
 protected:
-	NodeBase* first_ = nullptr;
-	NodeBase* last_ = nullptr;
+	Node* first_ = nullptr;
+	Node* last_ = nullptr;
 	size_t count_ = 0;
 };
 
-
-inline void swap(IntrusiveList& a, IntrusiveList& b)
-{
-	a.swap(b);
-}
-
-#pragma endregion // IntrusiveList
 
 } // namespace Util {}

@@ -30,7 +30,7 @@ std::wstring Error::format(const wchar_t* format) const noexcept
             }
             else if ((*(p + 1) ==L'T') && (*(p + 2) ==L'}')) // {T}
             {
-                result.append(typeName());
+                result.append(Util::format(L"%d", type()));
                 p += 3;
             }
             else if ((*(p + 1) ==L'C') && (*(p + 2) ==L'd') && (*(p + 3) ==L'}')) // {Cd}
@@ -120,22 +120,6 @@ std::wstring Error::format(const wchar_t* format) const noexcept
     }
 
     return result;
-}
-
-
-std::wstring GenericError::errorText() const noexcept
-{
-    switch (code())
-    {
-    case EUnknown: return std::wstring(L"Unknown error");
-    case EOutOfMemory: return std::wstring(L"Out of memory");
-    case ETimedOut: return std::wstring(L"Timed out");
-    case EIvalidArg: return std::wstring(L"Invalid argument");
-    case ENotImplemented: return std::wstring(L"Not implemented");
-    case EInvalidRequest: return std::wstring(L"Invalid request");
-    }
-
-    return std::wstring();
 }
 
 std::wstring getWin32ErrorText(HRESULT r) noexcept

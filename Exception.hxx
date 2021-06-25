@@ -22,7 +22,7 @@ public:
     {
     }
 
-    Exception(Error::Ref e)
+    Exception(Error::Ref e) noexcept
         : m_error(e)
     {
     }
@@ -36,7 +36,7 @@ public:
     {
         if (!m_error)
         {
-            return "Exception";
+            return "Unspecified exception";
         }
 
         if (m_cachedText.empty())

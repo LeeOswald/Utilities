@@ -5,6 +5,7 @@
 #include "./Thread.hxx"
 #include "./Time.hxx"
 
+#include <chrono>
 #include <string>
 
 namespace Util
@@ -26,7 +27,7 @@ enum Level
 extern Level g_Level;
 
 class Record
-    : public RefCountedBase<IRefCounted>
+    : public RefCountedBase
 {
 public:
     typedef RefCountedPtr<Record> Ref;
@@ -44,7 +45,7 @@ public:
             module,
             file,
             line,
-            Time::now(),
+            std::chrono::system_clock::now(),
             CurrentProcess::id(),
             CurrentThread::id(),
             std::move(text)
@@ -71,7 +72,7 @@ public:
         return m_line;
     }
 
-    inline Time time() const noexcept
+    inline std::chrono::time_point<std::chrono::system_clock> time() const noexcept
     {
         return m_time;
     }
@@ -101,7 +102,7 @@ protected:
         const char* module,
         const char* file,
         int line,
-        Time time,
+        std::chrono::time_point<std::chrono::system_clock> time,
         uint32_t pid,
         uint32_t tid,
         std::wstring&& text
@@ -122,7 +123,7 @@ private:
     const char* m_module;
     const char* m_file;
     int m_line;
-    Time m_time;
+    std::chrono::time_point<std::chrono::system_clock> m_time;
     uint32_t m_pid;
     uint32_t m_tid;
     std::wstring m_text;

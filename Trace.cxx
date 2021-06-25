@@ -1,4 +1,3 @@
-#include "./Date.hxx"
 #include "./IntrusiveList.hxx"
 #include "./Strings.hxx"
 #include "./Trace.hxx"

@@ -11,29 +11,21 @@ namespace Util
 {
   
 class Error
-    : public RefCountedBase<IRefCounted>
+    : public RefCountedBase
 {
 public:
-    enum Type
-    {
-        unspecified = 0,
-        generic = 1,
-        nt = 2,
-        win32 = 3
-    };
-
     typedef RefCountedPtr<Error> Ref;
 
     static Ref make(
-        const std::wstring& message,
+        const wchar_t* message,
         long code = 0,
         const char* file = nullptr,
         int line = 0,
         Ref inner = nullptr
-        ) noexcept
+        ) 
     {
         return Ref(new Error(
-            unspecified,
+            0,
             code,
             message,
             file,
@@ -42,14 +34,12 @@ public:
             ));
     }
 
-    Type type() const noexcept
+    Error(Error const&) = delete;
+    Error& operator=(Error const&) = delete;
+
+    long type() const noexcept
     {
         return m_type;
-    }
-
-    virtual const wchar_t* typeName() const noexcept
-    {
-        return L"Error";
     }
 
     const std::wstring& message() const noexcept // this is the original text string passed to make()
@@ -100,9 +90,9 @@ protected:
     }
 
     Error(
-        Type type,
+        long type,
         long code,
-        const std::wstring& message,
+        const wchar_t* message,
         const char* file,
         int line,
         Ref inner
@@ -117,7 +107,7 @@ protected:
     }
 
 private:
-    Type m_type;
+    long m_type;
     long m_code;
     std::wstring m_message;
     const char* m_file;
@@ -125,58 +115,6 @@ private:
     Ref m_inner;
 };
 
-
-class GenericError final
-    : public Error
-{
-public:
-    enum
-    {
-        Success = 0,
-        EUnknown = -1,
-        EOutOfMemory = -2,
-        ETimedOut = -3,
-        EIvalidArg = -4,
-        ENotImplemented = -5,
-        EInvalidRequest = -6
-    };
-
-    const wchar_t* typeName() const noexcept override
-    {
-        return L"GenericError";
-    }
-
-    std::wstring errorText() const noexcept override;
-
-    static Ref make(
-        long code,
-        const std::wstring& message = std::wstring(),
-        const char* file = nullptr,
-        int line = 0,
-        Ref inner = nullptr
-        ) noexcept
-    {
-        return Ref(new GenericError(
-            code,
-            message,
-            file,
-            line,
-            inner
-            ));
-    }
-
-private:
-    GenericError(
-        long code,
-        const std::wstring& message,
-        const char* file,
-        int line,
-        Ref inner
-        ) noexcept
-        : Error(Error::generic, code, message, file, line, inner)
-    {
-    }
-};
 
 __forceinline bool isWin32ErrorStatus(HRESULT r) noexcept
 {
@@ -195,10 +133,10 @@ class Win32Error final
     : public Error
 {
 public:
-    const wchar_t* typeName() const noexcept override
+    enum
     {
-        return L"win32::Error";
-    }
+        Type = 2
+    };
 
     std::wstring errorText() const noexcept override
     {
@@ -207,11 +145,11 @@ public:
 
     static Ref make(
         HRESULT code,
-        const std::wstring& message = std::wstring(),
+        const wchar_t* message = L"",
         const char* file = nullptr,
         int line = 0,
         Ref inner = nullptr
-        ) noexcept
+        ) 
     {
         return Ref(new Win32Error(
             code,
@@ -225,12 +163,12 @@ public:
 private:
     Win32Error(
         long code,
-        const std::wstring& message,
+        const wchar_t* message,
         const char* file,
         int line,
        Error::Ref inner
-        ) noexcept
-        : Error(Error::win32, code, message, file, line, inner)
+        ) 
+        : Error(Type, code, message, file, line, inner)
     {
     }
 };
@@ -247,10 +185,10 @@ class NtError final
     : public Error
 {
 public:
-    const wchar_t* typeName() const noexcept override
+    enum
     {
-        return L"nt::Error";
-    }
+        Type = 3
+    };
 
     std::wstring errorText() const noexcept override
     {
@@ -259,11 +197,11 @@ public:
 
     static Ref make(
         NTSTATUS code,
-        const std::wstring& message = std::wstring(),
+        const wchar_t* message = L"",
         const char* file = nullptr,
         int line = 0,
         Ref inner = nullptr
-        ) noexcept
+        ) 
     {
         return Ref(new NtError(
             code,
@@ -277,12 +215,12 @@ public:
 private:
     NtError(
         long code,
-        const std::wstring& message,
+        const wchar_t* message,
         const char* file,
         int line,
         Error::Ref inner
-        ) noexcept
-        : Error(Error::nt, code, message, file, line, inner)
+        ) 
+        : Error(Type, code, message, file, line, inner)
     {
     }
 };

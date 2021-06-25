@@ -158,7 +158,6 @@
     <ClCompile Include="..\..\Error.cxx" />
     <ClCompile Include="..\..\Exception.cxx" />
     <ClCompile Include="..\..\Thread.cxx" />
-    <ClCompile Include="..\..\Time.cxx" />
     <ClCompile Include="..\..\Trace.cxx" />
     <ClCompile Include="All.cxx" />
   </ItemGroup>
@@ -169,14 +168,12 @@
     <ClInclude Include="..\..\murmurhash.hxx" />
     <ClInclude Include="..\..\Process.hxx" />
     <ClInclude Include="..\..\Win32Handle.hxx" />
-    <ClInclude Include="..\..\Date.hxx" />
     <ClInclude Include="..\..\Empty.hxx" />
     <ClInclude Include="..\..\Event.hxx" />
     <ClInclude Include="..\..\IntrusiveList.hxx" />
     <ClInclude Include="..\..\IRefCounted.hxx" />
     <ClInclude Include="..\..\Strings.hxx" />
     <ClInclude Include="..\..\Thread.hxx" />
-    <ClInclude Include="..\..\Time.hxx" />
     <ClInclude Include="..\..\Timer.hxx" />
     <ClInclude Include="..\..\Trace.hxx" />
   </ItemGroup>

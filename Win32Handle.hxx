@@ -65,5 +65,9 @@ protected:
     HANDLE m_h;
 };
 
+inline void swap(Win32Handle& a, Win32Handle& b) noexcept
+{
+    a.swap(b);
+}
 
 } // namespace Util {}

@@ -19,9 +19,8 @@ protected:
 };
 
 
-template <class _Itf>
 class __declspec(novtable) RefCountedBase
-    : public _Itf
+    : public IRefCounted
 {
 protected:
     virtual ~RefCountedBase() noexcept
@@ -137,11 +136,14 @@ public:
         return m_p;
     }
 
-    void swap(RefCountedPtr& other) noexcept
+    void swap(RefCountedPtr& o) noexcept
     {
+        if (&o == this)
+            return;
+
         T* pTemp = m_p;
-        m_p = other.m_p;
-        other.m_p = pTemp;
+        m_p = o.m_p;
+        o.m_p = pTemp;
     }
 
     RefCountedNoReleasePtr<T>* get() const noexcept
@@ -218,5 +220,10 @@ protected:
     T* m_p;
 };
 
+template <class T>
+inline void swap(RefCountedPtr<T>& a, RefCountedPtr<T>& b) noexcept
+{
+    a.swap(b);
+}
 
 } // namespace Util {}
