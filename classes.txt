@@ -17,3 +17,4 @@ Core::Win32::Handle
 Core::Win32::CurrentProcess
 Core::Win32::CurrentThread
 Core::Win32::Thread
+Util::IntrusiveList

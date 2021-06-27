@@ -51,6 +51,13 @@ int main()
         l.push_back(new Doll(3));
         l.push_back(new Doll(4));
         l.push_back(new Doll(5));
+
+        for (auto const& i : l)
+        {
+            wchar_t tmp[256];
+            ::_snwprintf_s(tmp, _countof(tmp), L"present %d\n", i.i);
+            ::OutputDebugStringW(tmp);
+        }
     }
 
     return 0;

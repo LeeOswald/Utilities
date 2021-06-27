@@ -79,30 +79,102 @@ public:
         using pointer = const_pointer;
         using reference = const_reference;
 
-        explicit const_iterator(_Ty* m) noexcept
+        explicit const_iterator(pointer m) noexcept
             : m(m)
         {}
 
-        const_reference operator*() const noexcept
+        reference operator*() const noexcept
         {
             return *m;
         }
 
-        const_pointer operator->() const noexcept
+        pointer operator->() const noexcept
         {
             return m;
         }
 
         const_iterator &operator++() noexcept
         {
-            if (!m)
-                return const_iterator(nullptr);
-            m = m->next;
+            if (m)
+            {
+                m = m->next;
+            }
+
             return *this;
         }
 
+        const_iterator &operator++(int) noexcept
+        {
+            auto Tmp = *this;
+            ++*this;
+            return Tmp;
+        }
+
+        bool operator==(const_iterator &o) const noexcept
+        {
+            return (m == o.m);
+        }
+
+        bool operator!=(const_iterator &o) const noexcept
+        {
+            return (m != o.m);
+        }
+
     private:
-        _Ty* m;
+        pointer m;
+    };
+
+    struct iterator
+    {
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = value_type;
+        using difference_type = difference_type;
+        using pointer = pointer;
+        using reference = reference;
+
+        explicit iterator(pointer m) noexcept
+            : m(m)
+        {}
+
+        reference operator*() const noexcept
+        {
+            return *m;
+        }
+
+        pointer operator->() const noexcept
+        {
+            return m;
+        }
+
+        iterator &operator++() noexcept
+        {
+            if (m)
+            {
+                m = m->next;
+            }
+
+            return *this;
+        }
+
+        iterator &operator++(int) noexcept
+        {
+            auto Tmp = *this;
+            ++*this;
+            return Tmp;
+        }
+
+        bool operator==(iterator &o) const noexcept
+        {
+            return (m == o.m);
+        }
+
+        bool operator!=(iterator &o) const noexcept
+        {
+            return (m != o.m);
+        }
+
+    private:
+        pointer m;
     };
 
 	~IntrusiveList() noexcept
@@ -146,6 +218,58 @@ public:
 	{
 		return count_;
 	}
+
+    const_iterator begin() const noexcept
+    {
+        return const_iterator(first_);
+    }
+
+    iterator begin() noexcept
+    {
+        return iterator(first_);
+    }
+
+    const_iterator end() const noexcept
+    {
+        return const_iterator(nullptr);
+    }
+
+    iterator end() noexcept
+    {
+        return iterator(nullptr);
+    }
+
+    const_reference front() const
+    {
+        assert(!empty());
+        if (empty())
+            throw std::exception("Calling front() on an empty list");
+        return *first_;
+    }
+
+    reference front()
+    {
+        assert(!empty());
+        if (empty())
+            throw std::exception("Calling front() on an empty list");
+        return *first_;
+    }
+
+    const_reference back() const
+    {
+        assert(!empty());
+        if (empty())
+            throw std::exception("Calling back() on an empty list");
+        return *last_;
+    }
+
+    reference back()
+    {
+        assert(!empty());
+        if (empty())
+            throw std::exception("Calling back() on an empty list");
+        return *last_;
+    }
 		
 	void push_back(_Ty* item) noexcept
 	{
@@ -228,6 +352,22 @@ public:
 			last_ = nullptr;
 		}
 	}
+
+    void pop_front()
+    {
+        assert(!empty());
+        if (empty())
+            throw std::exception("Calling pop_front() on an empty list");
+        erase(first_);
+    }
+
+    void pop_back()
+    {
+        assert(!empty());
+        if (empty())
+            throw std::exception("Calling pop_back() on an empty list");
+        erase(last_);
+    }
 
 	void clear() noexcept
 	{
