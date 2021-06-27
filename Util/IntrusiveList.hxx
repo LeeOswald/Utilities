@@ -1,14 +1,24 @@
 #pragma once
 
 #include <cassert>
+#include <iterator>
 #include <utility>
 
 namespace Util
 {
 
-struct IntrusiveList
+template <typename _Ty>
+class IntrusiveList
 {
 public:
+    using value_type = _Ty;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    using pointer = _Ty *;
+    using const_pointer = _Ty const *;
+    using reference = _Ty &;
+    using const_reference = _Ty const &;
+
     struct Node
     {
         virtual ~Node() = default;
@@ -57,10 +67,43 @@ public:
             next = nullptr;
         }
 
-        Node* prev = nullptr;
-        Node* next = nullptr;
+        _Ty* prev = nullptr;
+        _Ty* next = nullptr;
     };
 
+    struct const_iterator
+    {
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = value_type;
+        using difference_type = difference_type;
+        using pointer = const_pointer;
+        using reference = const_reference;
+
+        explicit const_iterator(_Ty* m) noexcept
+            : m(m)
+        {}
+
+        const_reference operator*() const noexcept
+        {
+            return *m;
+        }
+
+        const_pointer operator->() const noexcept
+        {
+            return m;
+        }
+
+        const_iterator &operator++() noexcept
+        {
+            if (!m)
+                return const_iterator(nullptr);
+            m = m->next;
+            return *this;
+        }
+
+    private:
+        _Ty* m;
+    };
 
 	~IntrusiveList() noexcept
 	{
@@ -104,7 +147,7 @@ public:
 		return count_;
 	}
 		
-	Node* push_back(Node* item) noexcept
+	void push_back(_Ty* item) noexcept
 	{
 		assert(item);
 
@@ -124,10 +167,9 @@ public:
 		}
 
 		++count_;
-		return last_;
 	}
 
-	Node* push_front(Node* item) noexcept
+	void push_front(_Ty* item) noexcept
 	{
 		assert(item);
 
@@ -147,10 +189,9 @@ public:
 		}
 
 		++count_;
-		return first_;
 	}
 
-	void erase(Node* item) noexcept
+	void erase(_Ty* item) noexcept
 	{
 		assert(item);
 
@@ -178,6 +219,7 @@ public:
 		}
 
 		item->unlink();
+        delete item;
 
 		--count_;
 		if (!count_)
@@ -196,15 +238,15 @@ public:
 		{
 			auto next = p->next;
 			p->unlink();
+            delete p;
 			--count_;
 			p = next;
 		}
 	}
-
-	
+    	
 protected:
-	Node* first_ = nullptr;
-	Node* last_ = nullptr;
+	_Ty* first_ = nullptr;
+	_Ty* last_ = nullptr;
 	size_t count_ = 0;
 };
 

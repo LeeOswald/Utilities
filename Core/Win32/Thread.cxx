@@ -1,10 +1,14 @@
-#include "./Exception.hxx"
-#include "./Thread.hxx"
+#include "../Exception.hxx"
+#include "../Thread.hxx"
+#include "./Error.hxx"
 
 #include <cassert>
 #include <process.h>
 
-namespace Util
+namespace Core
+{
+
+namespace Win32
 {
 
 namespace
@@ -79,23 +83,20 @@ Thread::~Thread()
 }
 
 Thread::Thread()
-    : Win32Handle(0)
+    : Handle(0)
     , m_id(0)
-    , m_delegate(nullptr)
     , m_ctx(nullptr)
     , m_joined(false)
 {
 }
 
-Thread::Thread(ISimpleDelegate* task, void* ctx, const char* name)
-    : Win32Handle(0)
+Thread::Thread(Task&& task, void* ctx, const char* name)
+    : Handle(0)
     , m_id(0)
-    , m_delegate(task)
+    , m_task(std::move(task))
     , m_ctx(ctx)
     , m_joined(false)
 {
-    assert(m_delegate);
-
     if (name)
     {
         ::strncpy_s(m_name, _countof(m_name), name, _TRUNCATE);
@@ -108,7 +109,7 @@ Thread::Thread(ISimpleDelegate* task, void* ctx, const char* name)
 
     m_h = (HANDLE)::_beginthreadex(nullptr, 0, _threadProcStatic, this, 0, &m_id);
     if (!m_h)
-        Exception(Win32Error::make(::GetLastError(), L"", __FILE__, __LINE__));
+        Exception(Win32::Error::make(::GetLastError(), L"", __FILE__, __LINE__));
 }
 
 void Thread::_APCProc(ULONG_PTR) noexcept
@@ -129,8 +130,7 @@ void Thread::_run()
         CurrentThread::setName(m_name);
     }
 
-    assert(m_delegate);
-    m_delegate->run(m_ctx);
+    m_task(m_ctx);
 }
 
 void Thread::alert() noexcept
@@ -162,9 +162,9 @@ void Thread::join() noexcept
 void Thread::swap(Thread& o) noexcept
 {
     using std::swap;
-    Win32Handle::swap(o);
+    Handle::swap(o);
     swap(m_id, o.m_id);
-    swap(m_delegate, o.m_delegate);
+    swap(m_task, o.m_task);
     swap(m_ctx, o.m_ctx);
     char n[_countof(m_name)];
     ::memcpy(m_name, n, sizeof(m_name));
@@ -174,4 +174,6 @@ void Thread::swap(Thread& o) noexcept
     swap(m_joined, o.m_joined);
 }
 
-} // namespace Util
+} // namespace Win32 {}
+
+} // namespace Core

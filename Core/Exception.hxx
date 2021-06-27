@@ -5,9 +5,9 @@
 #include <string>
 
 #include "./Error.hxx"
-#include "./Strings.hxx"
+#include "../Util/Strings.hxx"
 
-namespace Util
+namespace Core
 {
 
 class Exception final
@@ -41,7 +41,7 @@ public:
 
         if (m_cachedText.empty())
         {
-            m_cachedText = ws2s(CP_THREAD_ACP, m_error->errorText());
+            m_cachedText = Util::ws2s(CP_THREAD_ACP, m_error->errorText());
         }
 
         return m_cachedText.c_str();
@@ -52,4 +52,4 @@ private:
     mutable std::string m_cachedText;
 };
 
-} // namespace Util {}
+} // namespace Core {}

@@ -1,10 +1,11 @@
-#pragma once
+#include <windows.h>
 
 #include <cstdint>
 
-#include <windows.h>
+namespace Core
+{
 
-namespace Util
+namespace Win32
 {
 
 namespace CurrentProcess
@@ -23,4 +24,7 @@ inline HANDLE handle()
 
 } // namespace CurrentProcess {}
 
-} // namespace Util {}
+
+} // namespace Win32 {}
+
+} // namespace Core {}

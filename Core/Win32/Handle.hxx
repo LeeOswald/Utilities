@@ -4,18 +4,21 @@
 
 #include <utility>
 
-namespace Util
+namespace Core
 {
 
-struct Win32Handle
+namespace Win32
 {
-    ~Win32Handle() noexcept
+
+struct Handle
+{
+    ~Handle() noexcept
     {
         if (m_h && (m_h != INVALID_HANDLE_VALUE))
             ::CloseHandle(m_h);
     }
 
-    Win32Handle(HANDLE h = INVALID_HANDLE_VALUE) noexcept
+    Handle(HANDLE h = INVALID_HANDLE_VALUE) noexcept
         : m_h(h)
     {}
 
@@ -29,25 +32,25 @@ struct Win32Handle
         return (m_h && (m_h != INVALID_HANDLE_VALUE));
     }
 
-    Win32Handle(Win32Handle const&) = delete;
-    Win32Handle& operator=(Win32Handle const&) = delete;
+    Handle(Handle const&) = delete;
+    Handle& operator=(Handle const&) = delete;
 
-    void swap(Win32Handle& o) noexcept
+    void swap(Handle& o) noexcept
     {
         std::swap(m_h, o.m_h);
     }
 
-    Win32Handle(Win32Handle&& o) noexcept
-        : Win32Handle()
+    Handle(Handle&& o) noexcept
+        : Handle()
     {
         o.swap(*this);
     }
 
-    Win32Handle& operator=(Win32Handle&& o) noexcept
+    Handle& operator=(Handle&& o) noexcept
     {
         if (&o != this)
         {
-            Win32Handle t(std::move(o));
+            Handle t(std::move(o));
             t.swap(*this);
         }
 
@@ -65,9 +68,11 @@ protected:
     HANDLE m_h;
 };
 
-inline void swap(Win32Handle& a, Win32Handle& b) noexcept
+inline void swap(Handle& a, Handle& b) noexcept
 {
     a.swap(b);
 }
 
-} // namespace Util {}
+} // namespace Win32 {}
+
+} // namespace Core {}

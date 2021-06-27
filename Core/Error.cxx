@@ -1,11 +1,11 @@
 #include "./Error.hxx"
-#include "./ntstatus.inl"
-#include "./Strings.hxx"
+
+#include "../Util/Strings.hxx"
 
 #include <cassert>
 
 
-namespace Util
+namespace Core
 {
 
 std::wstring Error::format(const wchar_t* format) const noexcept
@@ -83,7 +83,7 @@ std::wstring Error::format(const wchar_t* format) const noexcept
             {
                 if (m_file)
                 {
-                    result.append(s2ws(CP_THREAD_ACP, m_file));
+                    result.append(Util::s2ws(CP_THREAD_ACP, m_file));
                 }
 
                 p += 3;
@@ -122,21 +122,4 @@ std::wstring Error::format(const wchar_t* format) const noexcept
     return result;
 }
 
-std::wstring getWin32ErrorText(HRESULT r) noexcept
-{
-    if (r == S_OK)
-    {
-        return std::wstring();
-    }
-
-    return formatMessage(r);
-}
-
-std::wstring getNtErrorText(NTSTATUS r) noexcept
-{
-    return std::wstring(lookupNTSTATUSName(r));
-}
-
-
-
-} // namespace Util {}
+} // namespace Core {}

@@ -5,7 +5,7 @@
 #include <cassert>
 
 
-namespace Util
+namespace Core
 {
 
 
@@ -226,4 +226,4 @@ inline void swap(RefCountedPtr<T>& a, RefCountedPtr<T>& b) noexcept
     a.swap(b);
 }
 
-} // namespace Util {}
+} // namespace Core {}

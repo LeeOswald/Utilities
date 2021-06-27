@@ -1,13 +1,17 @@
 #pragma once
 
-#include "./Exception.hxx"
-#include "./Win32Handle.hxx"
+#include "../Exception.hxx"
+#include "./Error.hxx"
+#include "./Handle.hxx"
 
-namespace Util
+namespace Core
 {
 
-class Win32Event final
-    : public Win32Handle
+namespace Win32
+{
+
+class Event final
+    : public Handle
 {
 public:
     enum class Type
@@ -30,38 +34,39 @@ public:
         Alerted = WAIT_IO_COMPLETION
     };
 
-    Win32Event(Type t, const wchar_t* name = nullptr, bool Open = false)
-        : Win32Handle(
+    Event(Type t, const wchar_t* name = nullptr, bool Open = false)
+        : Handle(
         Open ?
         ::OpenEventW(SYNCHRONIZE, FALSE, name) :
         ::CreateEventW(nullptr, (t == Type::ManualReaset), false, name)
         )
     {
         if (!m_h)
-            throw Exception(Win32Error::make(::GetLastError(), std::wstring(), __FILE__, __LINE__));
+            throw Exception(Win32::Error::make(::GetLastError(), L"", __FILE__, __LINE__));
     }
 
     void Set()
     {
         if (!::SetEvent(m_h))
-            throw Exception(Win32Error::make(::GetLastError(), std::wstring(), __FILE__, __LINE__));
+            throw Exception(Win32::Error::make(::GetLastError(), L"", __FILE__, __LINE__));
     }
 
     void Reset()
     {
         if (!::ResetEvent(m_h))
-            throw Exception(Win32Error::make(::GetLastError(), std::wstring(), __FILE__, __LINE__));
+            throw Exception(Win32::Error::make(::GetLastError(), L"", __FILE__, __LINE__));
     }
 
     Result Wait(int Milliseconds = WaitInfinite)
     {
         auto r = static_cast<Result>(::WaitForSingleObjectEx(m_h, Milliseconds, TRUE));
         if (r == Result::Failed)
-            throw Exception(Win32Error::make(::GetLastError(), std::wstring(), __FILE__, __LINE__));
+            throw Exception(Win32::Error::make(::GetLastError(), L"", __FILE__, __LINE__));
 
         return r;
     }
 };
 
+} // namespace Win32 {}
 
-} // namespace Util {}
+} // namespace Core {}

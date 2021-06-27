@@ -155,31 +155,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Error.cxx" />
-    <ClCompile Include="..\..\Exception.cxx" />
-    <ClCompile Include="..\..\Thread.cxx" />
-    <ClCompile Include="..\..\Trace.cxx" />
+    <ClCompile Include="..\..\Core\Error.cxx" />
+    <ClCompile Include="..\..\Core\Trace.cxx" />
+    <ClCompile Include="..\..\Core\Win32\Thread.cxx" />
     <ClCompile Include="All.cxx" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Error.hxx" />
-    <ClInclude Include="..\..\Exception.hxx" />
-    <ClInclude Include="..\..\FastMutex.hxx" />
-    <ClInclude Include="..\..\ISimpleDelegate.hxx" />
-    <ClInclude Include="..\..\murmurhash.hxx" />
-    <ClInclude Include="..\..\Process.hxx" />
-    <ClInclude Include="..\..\Win32Handle.hxx" />
-    <ClInclude Include="..\..\Empty.hxx" />
-    <ClInclude Include="..\..\Event.hxx" />
-    <ClInclude Include="..\..\IntrusiveList.hxx" />
-    <ClInclude Include="..\..\IRefCounted.hxx" />
-    <ClInclude Include="..\..\Strings.hxx" />
-    <ClInclude Include="..\..\Thread.hxx" />
-    <ClInclude Include="..\..\Timer.hxx" />
-    <ClInclude Include="..\..\Trace.hxx" />
+    <ClInclude Include="..\..\Core\Error.hxx" />
+    <ClInclude Include="..\..\Core\Exception.hxx" />
+    <ClInclude Include="..\..\Core\Futex.hxx" />
+    <ClInclude Include="..\..\Core\Nt\Error.hxx" />
+    <ClInclude Include="..\..\Core\Nt\Nt.hxx" />
+    <ClInclude Include="..\..\Core\Process.hxx" />
+    <ClInclude Include="..\..\Core\Empty.hxx" />
+    <ClInclude Include="..\..\Core\IRefCounted.hxx" />
+    <ClInclude Include="..\..\Core\Thread.hxx" />
+    <ClInclude Include="..\..\Core\Trace.hxx" />
+    <ClInclude Include="..\..\Core\Win32\Error.hxx" />
+    <ClInclude Include="..\..\Core\Win32\Event.hxx" />
+    <ClInclude Include="..\..\Core\Win32\Futex.hxx" />
+    <ClInclude Include="..\..\Core\Win32\Handle.hxx" />
+    <ClInclude Include="..\..\Core\Win32\Process.hxx" />
+    <ClInclude Include="..\..\Core\Win32\Thread.hxx" />
+    <ClInclude Include="..\..\Util\IntrusiveList.hxx" />
+    <ClInclude Include="..\..\Util\murmurhash.hxx" />
+    <ClInclude Include="..\..\Util\Strings.hxx" />
+    <ClInclude Include="..\..\Util\Timer.hxx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\ntstatus.inl" />
+    <None Include="..\..\Core\ntstatus.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

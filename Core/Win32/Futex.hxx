@@ -2,7 +2,11 @@
 
 #include <windows.h>
 
-namespace Util
+
+namespace Core
+{
+
+namespace Win32
 {
 
 class Futex final
@@ -26,6 +30,11 @@ public:
         ::EnterCriticalSection(&m_cs);
     }
 
+    bool try_lock() noexcept
+    {
+        return !!::TryEnterCriticalSection(&m_cs);
+    }
+
     void unlock() noexcept
     {
         ::LeaveCriticalSection(&m_cs);
@@ -35,25 +44,6 @@ private:
     CRITICAL_SECTION m_cs;
 };
 
+} // namespace Win32{}
 
-class LockGuard
-{
-public:
-    ~LockGuard() noexcept
-    {
-        m_mtx.unlock();
-    }
-
-    LockGuard(Futex& mtx)
-        : m_mtx(mtx)
-    {
-    }
-
-    LockGuard(const LockGuard&) = delete;
-    LockGuard& operator=(const LockGuard&) = delete;
-
-private:
-    Futex& m_mtx;
-};
-
-} // namespace Util {}
+} // namespace Core {}

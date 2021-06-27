@@ -1,21 +1,17 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 
-#include "./ISimpleDelegate.hxx"
-#include "./Win32Handle.hxx"
+#include "./Handle.hxx"
+#include "../Thread.hxx"
 
 
-namespace Util
+namespace Core
 {
 
-enum class ThreadPriority : int
+namespace Win32
 {
-    low,
-    normal,
-    high,
-    realtime
-};
 
 namespace CurrentThread
 {
@@ -45,7 +41,7 @@ inline bool sleepAlertable(uint32_t Milliseconds) noexcept // returns true if al
     return (::SleepEx(Milliseconds, TRUE) == WAIT_IO_COMPLETION);
 }
 
-void setPriority(ThreadPriority p) noexcept;
+void setPriority(Core::ThreadPriority p) noexcept;
 
 inline void setAffinity(uintptr_t a) noexcept
 {
@@ -64,12 +60,14 @@ void setName(const char* name) noexcept;
 
 
 class Thread final
-    : public Win32Handle
+    : public Handle
 {
 public:
+    using Task = std::function<void(void*)>;
+
     ~Thread();
     Thread();
-    Thread(ISimpleDelegate* task, void* ctx, const char* name = nullptr);
+    Thread(Task&& task, void* ctx, const char* name = nullptr);
 
     Thread(Thread&& o) noexcept
         : Thread()
@@ -109,11 +107,14 @@ private:
     void _run();
 
     uint32_t m_id;
-    ISimpleDelegate* m_delegate;
+    Task m_task;
     void* m_ctx;
     char m_name[32];
     bool m_joined;
 };
 
 
-} // namespace Util {}
+
+} // namespace Win32 {}
+
+} // namespace Core {}

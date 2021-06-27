@@ -3,11 +3,10 @@
 #include <windows.h>
 
 #include "./IRefCounted.hxx"
-#include "./Win32.hxx"
 
 #include <string>
 
-namespace Util
+namespace Core
 {
   
 class Error
@@ -116,114 +115,7 @@ private:
 };
 
 
-__forceinline bool isWin32ErrorStatus(HRESULT r) noexcept
-{
-    return ((HRESULT)r < 0);
-}
-
-std::wstring getWin32ErrorText(HRESULT r) noexcept;
-
-__forceinline HRESULT lastError() noexcept
-{
-    return HRESULT_FROM_WIN32(::GetLastError());
-}
 
 
-class Win32Error final
-    : public Error
-{
-public:
-    enum
-    {
-        Type = 2
-    };
 
-    std::wstring errorText() const noexcept override
-    {
-        return getWin32ErrorText(code());
-    }
-
-    static Ref make(
-        HRESULT code,
-        const wchar_t* message = L"",
-        const char* file = nullptr,
-        int line = 0,
-        Ref inner = nullptr
-        ) 
-    {
-        return Ref(new Win32Error(
-            code,
-            message,
-            file,
-            line,
-            inner
-            ));
-    }
-
-private:
-    Win32Error(
-        long code,
-        const wchar_t* message,
-        const char* file,
-        int line,
-       Error::Ref inner
-        ) 
-        : Error(Type, code, message, file, line, inner)
-    {
-    }
-};
-
-__forceinline bool isNtErrorStatus(NTSTATUS r) noexcept
-{
-    return !NT_SUCCESS(r);
-}
-
-std::wstring getNtErrorText(NTSTATUS r) noexcept;
-
-
-class NtError final
-    : public Error
-{
-public:
-    enum
-    {
-        Type = 3
-    };
-
-    std::wstring errorText() const noexcept override
-    {
-        return getNtErrorText(code());
-    }
-
-    static Ref make(
-        NTSTATUS code,
-        const wchar_t* message = L"",
-        const char* file = nullptr,
-        int line = 0,
-        Ref inner = nullptr
-        ) 
-    {
-        return Ref(new NtError(
-            code,
-            message,
-            file,
-            line,
-            inner
-            ));
-    }
-
-private:
-    NtError(
-        long code,
-        const wchar_t* message,
-        const char* file,
-        int line,
-        Error::Ref inner
-        ) 
-        : Error(Type, code, message, file, line, inner)
-    {
-    }
-};
-
-
-} // namespace Util {}
+} // namespace Core {}

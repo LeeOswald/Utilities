@@ -3,12 +3,11 @@
 #include "./IRefCounted.hxx"
 #include "./Process.hxx"
 #include "./Thread.hxx"
-#include "./Time.hxx"
 
 #include <chrono>
 #include <string>
 
-namespace Util
+namespace Core
 {
 
 namespace Trace
@@ -215,4 +214,4 @@ private:
 
 } // namespace Trace {}
 
-} // namespace Util {}
+} // namespace Core {}
