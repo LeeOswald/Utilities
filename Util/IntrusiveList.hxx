@@ -110,17 +110,16 @@ public:
             return Tmp;
         }
 
-        bool operator==(const_iterator &o) const noexcept
+        bool operator==(const const_iterator &o) const noexcept
         {
             return (m == o.m);
         }
 
-        bool operator!=(const_iterator &o) const noexcept
+        bool operator!=(const const_iterator &o) const noexcept
         {
             return (m != o.m);
         }
 
-    private:
         pointer m;
     };
 
@@ -163,17 +162,26 @@ public:
             return Tmp;
         }
 
-        bool operator==(iterator &o) const noexcept
+        bool operator==(const iterator &o) const noexcept
         {
             return (m == o.m);
         }
 
-        bool operator!=(iterator &o) const noexcept
+        bool operator!=(const iterator &o) const noexcept
         {
             return (m != o.m);
         }
 
-    private:
+        bool operator==(const const_iterator &o) const noexcept
+        {
+            return (m == o.m);
+        }
+
+        bool operator!=(const const_iterator &o) const noexcept
+        {
+            return (m != o.m);
+        }
+
         pointer m;
     };
 
@@ -353,6 +361,12 @@ public:
 		}
 	}
 
+    void erase(iterator i) noexcept
+    {
+        if (i.m)
+            erase(i.m);
+    }
+
     void pop_front()
     {
         assert(!empty());
@@ -392,3 +406,28 @@ protected:
 
 
 } // namespace Util {}
+
+
+template <typename _Ty>
+inline bool operator==(const typename Util::IntrusiveList<_Ty>::const_iterator& a, const typename Util::IntrusiveList<_Ty>::const_iterator& b) noexcept
+{
+    return a.operator==(b);
+}
+
+template <typename _Ty>
+inline bool operator==(const typename Util::IntrusiveList<_Ty>::iterator& a, const typename Util::IntrusiveList<_Ty>::iterator& b) noexcept
+{
+    return a.operator==(b);
+}
+
+template <typename _Ty>
+inline bool operator!=(const typename Util::IntrusiveList<_Ty>::const_iterator& a, const typename Util::IntrusiveList<_Ty>::const_iterator& b) noexcept
+{
+    return a.operator!=(b);
+}
+
+template <typename _Ty>
+inline bool operator!=(const typename Util::IntrusiveList<_Ty>::iterator& a, const typename Util::IntrusiveList<_Ty>::iterator& b) noexcept
+{
+    return a.operator!=(b);
+}
